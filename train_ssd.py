@@ -71,8 +71,8 @@ class ObjectDetector:
         return predictions
 
 def main():
-    image_dir = "/content/drive/MyDrive/PennFudanPed/PennFudanPed/PNGImages/"
-    mask_dir = "/content/drive/MyDrive/PennFudanPed/PennFudanPed/PedMasks/"
+    image_dir = "dataset/PennFudanPed/PNGImages/"
+    mask_dir = "dataset/PennFudanPed/PedMasks/"
 
     images = sorted(os.listdir(image_dir))
     masks = sorted(os.listdir(mask_dir))
@@ -95,9 +95,9 @@ def main():
     plt.axis('off')
     plt.show()
 
-    model_path = "path_to_your_model.pth"
+    model_path = "models/ssd_path_to_your_model.pth"
     detector = ObjectDetector(model_path)
-    new_image_path = "path_to_new_image.jpg"
+    new_image_path = 'test/crosswalk-featured.jpg'
     detections = detector.detect_pedestrians(new_image_path)
     print(detections)
 
