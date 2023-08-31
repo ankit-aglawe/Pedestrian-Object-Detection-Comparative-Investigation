@@ -12,6 +12,8 @@ Get ready to dive into the world of computer vision, where we explore the nuance
 
 This dissertation is a beacon for enthusiasts, scholars, and practitioners alike. It's not just about solving challenges today; it's about providing a springboard for enhancing object recognition systems of the future. 🚀🔬
 
+Pre-trained model links - https://drive.google.com/drive/folders/1PMxvUX2NZmaBhpeyEBiBWAQ_Hzo1RwDR?usp=sharing
+
 ## 📦 Repository Contents
 
 - [Installation](#installation)
