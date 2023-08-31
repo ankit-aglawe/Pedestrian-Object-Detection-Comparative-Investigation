@@ -8,49 +8,69 @@ import torchvision.models.detection as detection
 from torchvision.transforms import functional as F
 import matplotlib.pyplot as plt
 
+
+def get_mask_pil(imagePath, maskPath):
+  img = Image.open(imagePath).convert("RGB")
+  mask = Image.open(maskPath)
+  mask = np.array(mask)
+
+  return Image.fromarray(mask), img
+
+def get_box(num_objs, masks):
+  boxes = []
+  for i in range(num_objs):
+      pos = np.where(masks[i])
+      xmin = np.min(pos[1])
+      xmax = np.max(pos[1])
+      ymin = np.min(pos[0])
+      ymax = np.max(pos[0])
+      boxes.append([xmin, ymin, xmax, ymax])
+  return boxes
+
+
+def get_dict(boxes, labels):
+  target = {}
+  target["boxes"] = boxes
+  target["labels"] = labels
+  return target
+
 class ModDataset(Dataset):
-    def __init__(self, image_paths, mask_paths, image_dir, mask_dir):
-        self.image_paths = image_paths
-        self.mask_paths = mask_paths
-        self.image_dir = image_dir
-        self.mask_dir = mask_dir
+    def __init__(self, image_paths, mask_paths, transform=None):
+        self.imagePaths = image_paths
+        self.maskPaths = mask_paths
+        self.transform = transform
 
     def __getitem__(self, idx):
-        image_path = os.path.join(self.image_dir, self.image_paths[idx])
-        mask_path = os.path.join(self.mask_dir, self.mask_paths[idx])
+        imagePath = imagePngPath + self.imagePaths[idx]
+        maskPath = masksPath + self.maskPaths[idx]
+        mask_pil, img = get_mask_pil(imagePath, maskPath)
 
-        img = Image.open(image_path).convert("RGB")
-        mask = Image.open(mask_path)
-        mask = np.array(mask)
+        if self.transform:
+            img = self.transform(img)
+            mask = self.transform(mask_pil)
+
+        mask = np.array(mask_pil)
 
         obj_ids = np.unique(mask)
         obj_ids = obj_ids[1:]
         num_objs = len(obj_ids)
 
         masks = np.zeros((num_objs, mask.shape[0], mask.shape[1]))
+
         for i, obj_id in enumerate(obj_ids):
             masks[i][mask == obj_id] = 1
 
-        boxes = []
-        for i in range(num_objs):
-            pos = np.where(masks[i])
-            xmin = np.min(pos[1])
-            xmax = np.max(pos[1])
-            ymin = np.min(pos[0])
-            ymax = np.max(pos[0])
-            boxes.append([xmin, ymin, xmax, ymax])
+        boxes = get_box(num_objs, masks)
+
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.ones((num_objs,), dtype=torch.int64)
+        target = get_dict(boxes, labels)
 
-        target = {
-            "boxes": boxes,
-            "labels": labels,
-        }
-
-        return ToTensor()(img), target
+        return T.ToTensor()(img), target
 
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.imagePaths)
+
 
 class ObjectDetector:
     def __init__(self, model_path):
